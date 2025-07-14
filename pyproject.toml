@@ -1,0 +1,13 @@
+[project]
+name = "structure"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.116.0",
+    "uvicorn>=0.35.0",
+]
+
+[tool.uv.scripts]
+structure = "uvicorn main:app --reload"
