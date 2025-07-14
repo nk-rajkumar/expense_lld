@@ -30,7 +30,6 @@ class ExpenseRepository(BaseRepository):
         sort_by=None,
         skip=0,
         limit=100,
-        include_deleted=False
     ):
         return super().list(
             model=model,
@@ -39,5 +38,4 @@ class ExpenseRepository(BaseRepository):
             sort_by=sort_by,
             skip=skip,
             limit=limit,
-            include_deleted=include_deleted,
         )

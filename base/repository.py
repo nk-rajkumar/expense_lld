@@ -64,9 +64,6 @@ class BaseRepository:
             return 1
         return 0
 
-    # ------------------------------------------------------------------ #
-    # MAIN LIST METHOD
-    # ------------------------------------------------------------------ #
     def list(
         self,
         *,
@@ -76,36 +73,28 @@ class BaseRepository:
         sort_by: Optional[List[Dict[str, Any]]] = None,
         skip: int = 0,
         limit: int = 100,
-        include_deleted: bool = False,
     ) -> Dict[str, Any]:
-        # start query
+
         query = self.db.query(*(columns if columns else [model]))
 
-        # filters -------------------------------------------------------
         if filters:
             query = self._apply_filters(query, filters, model)
 
         total_count = query.count()
 
-        # sorting -------------------------------------------------------
         if sort_by:
             query = self._apply_sorting(query, sort_by, model)
 
-        # pagination ----------------------------------------------------
         query_data = query.offset(skip).limit(limit).all()
 
-        # serialise -----------------------------------------------------
         if columns:
             data = [self._row_to_dict(row, columns) for row in query_data]
         else:
             data = [self._model_to_dict(row) for row in query_data]
 
-        print("✅ Final query before execution:", query)
+        print("Final query before execution:", query)
         return {"data": data, "total_count": total_count}
 
-    # ------------------------------------------------------------------ #
-    # FILTER HELPER
-    # ------------------------------------------------------------------ #
     def _apply_filters(
         self,
         query: Query,
@@ -113,10 +102,10 @@ class BaseRepository:
         model,
     ) -> Query:
         for field_name, spec in filters.items():
-            if not spec:  # safety‑check
+            if not spec:
                 continue
 
-            column = getattr(model, field_name)  # resolve str → column
+            column = getattr(model, field_name)
             op = spec["op"]
             value = spec["value"]
 
@@ -138,9 +127,6 @@ class BaseRepository:
                 query = query.filter(column.startswith(value))
         return query
 
-    # ------------------------------------------------------------------ #
-    # SORT HELPER  ← this is the one that was missing
-    # ------------------------------------------------------------------ #
     def _apply_sorting(
         self,
         query: Query,
@@ -152,15 +138,10 @@ class BaseRepository:
             order = spec["order"]
             if not hasattr(model, column):
                 continue
-            # column = getattr(model, field_name)
             query = query.order_by(desc(column) if order == "desc" else asc(column))
         return query
 
-    # ------------------------------------------------------------------ #
-    # SERIALISERS
-    # ------------------------------------------------------------------ #
     def _to_serializable(self, value):
-        """Convert value to a JSON-serializable format if needed."""
         if hasattr(value, "isoformat"):
             return value.isoformat()
         return value

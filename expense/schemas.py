@@ -1,6 +1,15 @@
 from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
-from typing import Any, Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime, date
+
+from base.schemas.request import (
+    BaseFilters,
+    FilterExpression,
+    DateRange,
+    PaginationRequest,
+    SortBy,
+)
+from base.schemas.response import PaginatedResponse
 
 
 class ExpenseRecord(BaseModel):
@@ -57,24 +66,15 @@ class DeleteExpenseResponse(BaseModel):
     message: str
 
 
-from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator, model_validator
-from datetime import date
-
-from base.schemas.request import (
-    BaseFilters,
-    FilterExpression,
-    DateRange,
-    PaginationRequest,
-    SortBy,
-)
-from base.schemas.response import PaginatedResponse
+class CategoryFilterExpression(BaseModel):
+    op: Literal["eq", "startswith"]
+    value: str
 
 
 class ExpenseFilters(BaseFilters):
     amount: Optional[FilterExpression] = None
     expense_date: Optional[DateRange] = None
-    category: Optional[FilterExpression] = None
+    category: Optional[CategoryFilterExpression] = None
 
 
 class ExpenseSortBy(SortBy):
@@ -92,7 +92,6 @@ class ListExpenseRequest(BaseModel):
     filters: Optional[ExpenseFilters] = Field(default=None)
     sort_by: Optional[List[ExpenseSortBy]] = Field(default_factory=list)
     pagination: PaginationRequest = Field(default_factory=PaginationRequest)
-    include_deleted: Optional[bool] = False
 
     @model_validator(mode="before")
     def coerce_filters(cls, values):
@@ -101,37 +100,12 @@ class ListExpenseRequest(BaseModel):
             if isinstance(filters.get("amount"), dict):
                 filters["amount"] = FilterExpression(**filters["amount"])
             if isinstance(filters.get("category"), dict):
-                filters["category"] = FilterExpression(**filters["category"])
+                filters["category"] = CategoryFilterExpression(**filters["category"])
             if isinstance(filters.get("expense_date"), dict):
                 filters["expense_date"] = DateRange(**filters["expense_date"])
             values["filters"] = ExpenseFilters(**filters)
         return values
 
 
-"""class ExpenseRecord(BaseModel):
-    id: str
-    amount: float
-    description: Optional[str]
-    category: Optional[str]
-    expense_date: date
-    created_at: Optional[str]
-    modified_at: Optional[str]"""
-
-
 class ListExpenseResponse(PaginatedResponse):
     data: List[ExpenseRecord]
-
-    @classmethod
-    def from_repository_result(
-        cls,
-        repo_result: dict,
-        page: int,
-        limit: int,
-        record_model: type[ExpenseRecord],
-    ) -> "ListExpenseResponse":
-        return cls(
-            data=[record_model(**record) for record in repo_result["data"]],
-            total_count=repo_result["total_count"],
-            page=page,
-            limit=limit,
-        )

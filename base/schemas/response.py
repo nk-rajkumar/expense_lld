@@ -1,5 +1,3 @@
-# base/schemas/response.py
-
 from typing import List, Type, Dict, Any
 from pydantic import BaseModel
 

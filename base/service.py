@@ -96,7 +96,6 @@ class BaseService(ABC):
         pagination: PaginationRequest,
         sort_by: List[SortBy] = None,
         filters: Optional[BaseFilters] = None,
-        include_deleted: Optional[bool] = False,
         columns: Optional[List] = None,
     ) -> Dict[str, Any]:
         try:
@@ -112,7 +111,6 @@ class BaseService(ABC):
                 sort_by=sort_by,
                 skip=offset,
                 limit=limit,
-                include_deleted=include_deleted,
                 columns=columns,
             )
         except Exception as e:
@@ -139,19 +137,13 @@ class BaseService(ABC):
             field = sort_spec.field
             order = sort_spec.order
             if hasattr(model, field):
-                processed_sort.append(
-                    {"field": field, "order": order}  # ✅ keep it string only
-                )
+                processed_sort.append({"field": field, "order": order})
 
         return processed_sort
 
     def _process_filters(
         self, model: Any, filters: BaseFilters
     ) -> Dict[str, Dict[str, Any]]:
-        """
-        Convert filter specifications from request payload to dictionary of
-        field names and filter criteria (used by repository).
-        """
         if not filters:
             return {}
 
@@ -173,5 +165,5 @@ class BaseService(ABC):
                     "value": [field_value.from_, field_value.to],
                 }
 
-        print("✅ Processed filters:", processed_filters)
+        print("Processed filters:", processed_filters)
         return processed_filters

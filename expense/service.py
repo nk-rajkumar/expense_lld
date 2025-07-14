@@ -58,7 +58,6 @@ class ExpenseService(BaseService):
                 pagination=request.pagination,
                 sort_by=request.sort_by,
                 filters=request.filters,
-                include_deleted=request.include_deleted,
             )
             return ListExpenseResponse.from_repository_result(
                 repo_result=repo_result,

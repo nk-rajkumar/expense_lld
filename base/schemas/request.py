@@ -1,5 +1,3 @@
-# base/schemas/request.py
-
 from typing import Union, List, Literal, Optional, Any
 from datetime import date
 from pydantic import BaseModel, Field
