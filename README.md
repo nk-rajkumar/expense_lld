@@ -1,4 +1,7 @@
 ```text
+
+This is sample project for learning Repository Pattern in Development
+
 .venv
 
 base
